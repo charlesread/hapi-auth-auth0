@@ -1,0 +1,39 @@
+{
+  "name": "hapi-auth-auth0",
+  "version": "0.0.1",
+  "description": "Auth0 OAuth 2 plugin for Hapi apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Charles Read",
+  "license": "ISC",
+  "dependencies": {
+    "auth0": "^2.9.1",
+    "boom": "^7.1.1",
+    "debug": "^3.1.0",
+    "deep-extend": "^0.5.0",
+    "randomatic": "^3.0.0",
+    "request": "^2.83.0",
+    "type-detect": "^4.0.5",
+    "yar": "^9.0.1"
+  },
+  "devDependencies": {
+    "hapi": "^17.2.0"
+  },
+  "keywords": [
+    "hapi",
+    "auth0",
+    "auth",
+    "authentication",
+    "oauth"
+  ],
+  "bugs": {
+    "url": "https://github.com/charlesread/hapi-auth-auth0/issues",
+    "email": "charles@charlesread.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charlesread/hapi-auth-auth0"
+  }
+}
