@@ -49,6 +49,7 @@ plugin.register = async function (server, options) {
       debug('userInfo:')
       debug(userInfo)
       if (type(pluginOptions.transformer) === 'function') {
+        debug('transformer is not null and is a function')
         const transformerResults = pluginOptions.transformer(userInfo)
         if (transformerResults.then) {
           userInfo = await transformerResults

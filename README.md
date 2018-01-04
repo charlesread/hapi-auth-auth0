@@ -90,7 +90,7 @@ The only "it won't work without them" options are `domain`, `client_id`, and `cl
 
 ### Optional Options
 
-* `scope` - a space-separated list of strings that represent the permissions/scopes that you're asking the user for.  `profile open_id email` by default.
+* `scope` - a space-separated list of strings that represent the permissions/scopes that you're asking the user for.  `profile openid email` by default.
 * `success` - a function with the signature `function(object)` (where `object` is the information returned from Auth0).  This function is called upon successful authentication with Auth0, so this is useful for things like persisting user information, it does not have any impact on the plugin itself, it's meant for your purposes.
 *  `transformer` - a function with the signature `function(object)` (where `object` is the information returned from Auth0) that returns the object, or returns a `Promise` that resolves the object, that you want to become `request.auth.credentials`.  Unlike the function assigned to `success`, the results of this function call _will_ have an impact on the plugin, namely whatever the function returns (or whatever the returned `Promise` resolves) will be that which is used to create `request.auth.credentials`.
 * `error` - a function with signature `function(error)` that is called if any errors are encountered during the internal operations of the plugin.
