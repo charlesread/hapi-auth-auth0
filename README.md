@@ -43,7 +43,7 @@ const server = Hapi.server({
   await server.register({
     plugin: hapuAuthAuth0,
     options: {
-      domain: '<DOMAIN>.auth0.com',
+      domain: '<DOMAIN>',
       client_id: '<CLIENT ID>',
       client_secret: '<CLIENT_SECRET>'
     }
