@@ -3,7 +3,6 @@
 const path = require('path')
 const debug = require('debug')('hapi-auth-auth0:plugin')
 const Boom = require('boom')
-const type = require('type-detect')
 
 const _options = require(path.join(__dirname, 'lib', 'options.js'))
 const utility = require(path.join(__dirname, 'lib', 'utility.js'))
@@ -41,21 +40,30 @@ plugin.register = async function (server, options) {
     path: pluginOptions.handlerPath,
     handler: async function (req, h) {
       const destination = req.yar.get('destination')
-      debug('code: %s', req.query.code)
+      const queryStringParams = req.query
+      debug('queryStringParams: %j', queryStringParams)
+      if (queryStringParams.error && queryStringParams['error_description']) {
+        const err = new Error(queryStringParams.error + ': ' + queryStringParams['error_description'])
+        debug('error encountered in callback URL: ', err.message)
+        if (pluginOptions.error && typeof pluginOptions.error === 'function') {
+          debug('error is not null and is a function, invoking')
+          const results = pluginOptions.error(err, req, h)
+          return results.then ? await results : results
+        }
+      }
+      const code = queryStringParams.code
+      debug('code: %s', code)
       debug('destination: %s', destination)
-      const userAccessToken = await utility.getUserAccessToken(req.query.code)
+      const userAccessToken = await utility.getUserAccessToken(code)
       debug('userAccessToken: %s', userAccessToken)
       let userInfo = await utility.getUserInfo(userAccessToken)
       debug('userInfo:')
       debug(userInfo)
-      if (type(pluginOptions.transformer) === 'function') {
-        debug('transformer is not null and is a function')
+      if (pluginOptions.transformer && typeof pluginOptions.transformer === 'function') {
+        debug('transformer is not null and is a function, invoking')
         const transformerResults = pluginOptions.transformer(userInfo)
-        if (transformerResults.then) {
-          userInfo = await transformerResults
-        } else {
-          userInfo = transformerResults
-        }
+        userInfo = transformerResults.then ? await transformerResults : transformerResults
+        debug('[transformed] userInfo: %j', userInfo)
       }
       req.yar.set(pluginOptions.credentialsName, userInfo)
       return h.redirect(pluginOptions.loginSuccessRedirectPath || destination || '/')
@@ -78,7 +86,10 @@ internals.scheme = function () {
       const credentials = req.yar.get(pluginOptions.credentialsName)
       if (credentials) {
         if (pluginOptions.success && typeof pluginOptions.success === 'function') {
-          pluginOptions.success(credentials)
+          const successResults = pluginOptions.success(credentials)
+          if (successResults.then) {
+            await successResults
+          }
         }
         debug('credentials does exist')
         return h.authenticated({credentials})
