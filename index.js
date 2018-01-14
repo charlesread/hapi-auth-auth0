@@ -23,6 +23,7 @@ plugin.register = async function (server, options) {
   })
   server.auth.scheme('auth0', internals.scheme)
   if (!server.registrations['yar']) {
+    debug('yar is not registered')
     await server.register({
       plugin: require('yar'),
       options: pluginOptions.yar
@@ -39,7 +40,6 @@ plugin.register = async function (server, options) {
     method: 'get',
     path: pluginOptions.handlerPath,
     handler: async function (req, h) {
-      const destination = req.yar.get('destination')
       const queryStringParams = req.query
       debug('queryStringParams: %j', queryStringParams)
       if (queryStringParams.error && queryStringParams['error_description']) {
@@ -53,7 +53,6 @@ plugin.register = async function (server, options) {
       }
       const code = queryStringParams.code
       debug('code: %s', code)
-      debug('destination: %s', destination)
       const userAccessToken = await utility.getUserAccessToken(code)
       debug('userAccessToken: %s', userAccessToken)
       let userInfo = await utility.getUserInfo(userAccessToken)
@@ -66,7 +65,7 @@ plugin.register = async function (server, options) {
         debug('[transformed] userInfo: %j', userInfo)
       }
       req.yar.set(pluginOptions.credentialsName, userInfo)
-      return h.redirect(pluginOptions.loginSuccessRedirectPath || destination || '/')
+      return h.redirect(pluginOptions.loginSuccessRedirectPath || req.path || '/')
     }
   })
 }
@@ -77,24 +76,24 @@ internals.scheme = function () {
   const _scheme = {}
   _scheme.authenticate = async function (req, h) {
     try {
-      debug('_scheme.authenticate called')
+      debug('[%s] _scheme.authenticate called', req.path)
       if (!req.yar.get('destination')) {
-        debug('destination is not set, setting to req.path')
+        debug('[%s] destination is not set, setting to %s', req.path, req.path)
         req.yar.set('destination', req.path)
       }
       debug('destination: %s', req.yar.get('destination'))
       const credentials = req.yar.get(pluginOptions.credentialsName)
       if (credentials) {
+        debug('[%s] credentials DOES exist', req.path)
         if (pluginOptions.success && typeof pluginOptions.success === 'function') {
           const successResults = pluginOptions.success(credentials)
           if (successResults.then) {
             await successResults
           }
         }
-        debug('credentials does exist')
         return h.authenticated({credentials})
       } else {
-        debug('credentials does not exist, redirecting to Auth0 for auth')
+        debug('[%s] credentials does NOT exist', req.path)
         const response = h.response()
         response.redirect(pluginOptions.auth0.dialogUrl)
         return response.takeover()
