@@ -64,6 +64,15 @@ plugin.register = async function (server, options) {
         userInfo = transformerResults.then ? await transformerResults : transformerResults
         debug('[transformed] userInfo: %j', userInfo)
       }
+      if (pluginOptions.success && typeof pluginOptions.success === 'function') {
+        debug('success is not null and is a function, invoking')
+        const successResults = pluginOptions.success(userInfo, req, h)
+        if (successResults.then) {
+          debug('success results are thenable')
+          await successResults
+          debug('success function returned')
+        }
+      }
       req.yar.set(pluginOptions.credentialsName, userInfo)
       return h.redirect(pluginOptions.loginSuccessRedirectPath || req.yar.get('destination') || '/')
     }
@@ -85,15 +94,15 @@ internals.scheme = function () {
       const credentials = req.yar.get(pluginOptions.credentialsName)
       if (credentials) {
         debug('[%s] credentials DOES exist', req.path)
-        if (pluginOptions.success && typeof pluginOptions.success === 'function') {
-          debug('success is not null and is a function, invoking')
-          const successResults = pluginOptions.success(credentials, req, h)
-          if (successResults.then) {
-            debug('success results are thenable')
-            await successResults
-            debug('success function returned')
-          }
-        }
+        // if (pluginOptions.success && typeof pluginOptions.success === 'function') {
+        //   debug('success is not null and is a function, invoking')
+        //   const successResults = pluginOptions.success(credentials, req, h)
+        //   if (successResults.then) {
+        //     debug('success results are thenable')
+        //     await successResults
+        //     debug('success function returned')
+        //   }
+        // }
         return h.authenticated({credentials})
       } else {
         debug('[%s] credentials does NOT exist', req.path)
