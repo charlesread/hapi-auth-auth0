@@ -60,12 +60,12 @@ plugin.register = async function (server, options) {
       debug(userInfo)
       if (pluginOptions.transformer && typeof pluginOptions.transformer === 'function') {
         debug('transformer is not null and is a function, invoking')
-        const transformerResults = pluginOptions.transformer(userInfo)
+        const transformerResults = pluginOptions.transformer(userInfo, req, h)
         userInfo = transformerResults.then ? await transformerResults : transformerResults
         debug('[transformed] userInfo: %j', userInfo)
       }
       req.yar.set(pluginOptions.credentialsName, userInfo)
-      return h.redirect(pluginOptions.loginSuccessRedirectPath || req.path || '/')
+      return h.redirect(pluginOptions.loginSuccessRedirectPath || req.yar.get('destination') || '/')
     }
   })
 }
@@ -86,9 +86,12 @@ internals.scheme = function () {
       if (credentials) {
         debug('[%s] credentials DOES exist', req.path)
         if (pluginOptions.success && typeof pluginOptions.success === 'function') {
-          const successResults = pluginOptions.success(credentials)
+          debug('success is not null and is a function, invoking')
+          const successResults = pluginOptions.success(credentials, req, h)
           if (successResults.then) {
+            debug('success results are thenable')
             await successResults
+            debug('success function returned')
           }
         }
         return h.authenticated({credentials})
@@ -102,7 +105,7 @@ internals.scheme = function () {
       if (pluginOptions.error) {
         pluginOptions.error(err)
       } else {
-        console.error(err.message)
+        return err
       }
       return h.unauthenticated(Boom.unauthorized(err.message))
     }
