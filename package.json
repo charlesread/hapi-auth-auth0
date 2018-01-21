@@ -1,6 +1,6 @@
 {
   "name": "hapi-auth-auth0",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Auth0 OAuth 2 plugin for Hapi apps",
   "main": "index.js",
   "scripts": {
