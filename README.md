@@ -1,5 +1,8 @@
 # hapi-auth-auth0
 
+
+[![Join the chat at https://gitter.im/hapi-auth-auth0](https://gitter.im/hapi-auth-auth0.svg)](https://gitter.im/hapi-auth-auth0/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Hapi JS plugin that allows "plug-and-play" Auth0 authentication in Hapi routes.
 
 <!-- toc -->
