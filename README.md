@@ -50,7 +50,7 @@ const server = Hapi.server({
       client_secret: '<CLIENT_SECRET>'
     }
   })
-  // register that auth0 authentication strategy
+  // register the auth0 authentication strategy
   server.auth.strategy('auth0', 'auth0')
   // a secure route
   server.route({
