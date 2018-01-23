@@ -35,7 +35,6 @@ npm install --save hapi-auth-auth0
 'use strict'
 
 const Hapi = require('hapi')
-const hapuAuthAuth0 = require('hapi-auth-auth0')
 
 const server = Hapi.server({
   host: 'localhost',
@@ -44,39 +43,30 @@ const server = Hapi.server({
 
 !async function () {
   await server.register({
-    plugin: hapuAuthAuth0,
+    plugin: require('hapi-auth-auth0'),
     options: {
       domain: '<DOMAIN>',
       client_id: '<CLIENT ID>',
       client_secret: '<CLIENT_SECRET>'
-    },
-    // optional
-    transformer: async function (credentials) {
-      const email = credentials.sub.split('|').slice(-1)[0]
-      credentials.cn = email.substr(0, email.indexOf('@'))
-      return credentials
-    },
-    // optional
-    error: async function(err, request, h) {
-      console.error(err.message)
-      const response = h.response('<h1>Oh hey, sorry, something went wrong.</h1>')
-      return response.takeover()
     }
   })
+  // register that auth0 authentication strategy
   server.auth.strategy('auth0', 'auth0')
-  await server.route({
+  // a secure route
+  server.route({
     method: 'GET',
     path: '/secure',
     config: {
+      // this makes this route secure
       auth: 'auth0'
     },
     handler: async function (req, h) {
       // hapi-auth-auth0 will set req.auth.credentials to that which was returned by Auth0
-      const credentials = req.auth.credentials
-      return credentials
+      return {credentials: req.auth.credentials}
     }
   })
-  await server.route({
+  // an insecure route
+  server.route({
     method: 'GET',
     path: '/insecure',
     handler: async function (req, h) {
@@ -86,10 +76,9 @@ const server = Hapi.server({
   await server.start()
 }()
   .then(function () {
-    console.log('Server running at:', server.info.uri)
+    console.log('server running at:', server.info.uri)
   })
   .catch(function (err) {
-    console.error(err.message)
     console.error(err.stack)
     process.exit(1)
   })
